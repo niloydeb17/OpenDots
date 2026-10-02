@@ -51,3 +51,18 @@ it('reports activation failure until the SDK recovers online', () => {
   );
   expect(setupStatus(declared, 'online', true).slack).toBe('online');
 });
+
+
+it('accepts ChatGPT plan credentials instead of an OpenAI API key', () => {
+  expect(
+    setupStatus({
+      ...config,
+      apiKey: undefined,
+      chatGptAuthFile: '/data/chatgpt/auth.json',
+      model: 'gpt-6.1-sol',
+    }),
+  ).toMatchObject({
+    model: true,
+    missing: [],
+  });
+});

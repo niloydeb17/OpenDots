@@ -18,6 +18,7 @@ import { Store } from './store.js';
 import { WorkspaceStore } from './workspace.js';
 import type { PlatformConfig } from './platform-config.js';
 import { browserResponse } from './research.js';
+import { createChatGptAccessTokenProvider } from './auth/chatgpt-auth.js';
 const channelError = () => ({
   type: EventType.RUN_ERROR,
   message:
@@ -75,7 +76,7 @@ export class DotAgent extends AbstractAgent {
         );
         if (
           !this.config.intelligenceKey ||
-          !this.config.apiKey ||
+          !(this.config.apiKey || this.config.chatGptAuthFile) ||
           !this.config.model
         )
           throw new Error('Intelligence and model configuration are required.');
@@ -179,10 +180,14 @@ export class DotAgent extends AbstractAgent {
           initialSettings.memoryAllowed && dot.memoryAllowed
             ? this.store.memories().map((memory) => memory.text)
             : [];
+        const usingChatGptPlan = Boolean(this.config.chatGptAuthFile);
+
         const adapter = openaiCompatibleText(this.config.model, {
-          apiKey: this.config.apiKey,
+          apiKey: usingChatGptPlan
+            ? createChatGptAccessTokenProvider(this.config.chatGptAuthFile!)
+            : this.config.apiKey!,
           baseURL: this.config.baseUrl ?? 'https://api.openai.com/v1',
-          api: 'chat-completions',
+          api: usingChatGptPlan ? 'responses' : 'chat-completions',
           maxRetries: 1,
         });
         const serverTools = [
@@ -226,7 +231,9 @@ export class DotAgent extends AbstractAgent {
               abortController: ctx.abortController,
               threadId: ctx.input.threadId,
               runId: ctx.input.runId,
-              modelOptions: { max_completion_tokens: 2200 },
+              modelOptions: usingChatGptPlan
+                ? { store: false }
+                : { max_completion_tokens: 2200 },
               agentLoopStrategy: maxIterations(
                 dot.skillDeliveryEnabled && conversation.learningContainerId
                   ? 10

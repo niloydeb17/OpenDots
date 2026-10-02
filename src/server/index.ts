@@ -29,6 +29,7 @@ const config: PlatformConfig = {
   intelligenceApiUrl: process.env.INTELLIGENCE_API_URL || undefined,
   intelligenceWsUrl: process.env.INTELLIGENCE_WS_URL || undefined,
   apiKey: process.env.OPENAI_API_KEY,
+  chatGptAuthFile: process.env.CHATGPT_AUTH_FILE,
   model: process.env.OPENAI_MODEL,
   baseUrl: process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1',
   browserUrl: process.env.BROWSER_URL,

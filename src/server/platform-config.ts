@@ -5,6 +5,7 @@ export interface PlatformConfig {
   intelligenceWsUrl?: string;
   model?: string;
   apiKey?: string;
+  chatGptAuthFile?: string;
   baseUrl: string;
   computerSupervisorUrl?: string;
   computerSupervisorToken?: string;
@@ -27,9 +28,10 @@ export function setupStatus(
   slack = 'not_configured',
   activationFailed = false,
 ): SetupStatus {
+  const modelAuth = Boolean(config.apiKey || config.chatGptAuthFile);
   const missing = [
     !config.intelligenceKey && 'INTELLIGENCE_API_KEY',
-    !config.apiKey && 'OPENAI_API_KEY',
+    !modelAuth && 'OPENAI_API_KEY or CHATGPT_AUTH_FILE',
     !config.model && 'OPENAI_MODEL',
   ].filter((item): item is string => !!item);
   const declaredSlack = !!(
@@ -46,7 +48,7 @@ export function setupStatus(
       : 'not_configured';
   return {
     intelligence: !!config.intelligenceKey,
-    model: !!(config.apiKey && config.model),
+    model: !!(modelAuth && config.model),
     browser: !!(config.browserUrl && config.browserSecret),
     voice: !!(config.voiceKey && config.voiceModel && !missing.length),
     slack,
