@@ -1,6 +1,7 @@
 import { pageReviewTool } from '../shared/page-review.js';
 import { ComputerService } from './computer-service.js';
 import { computerTools } from './computer-tools.js';
+import { restoreResponseToolFinish } from './response-tool-finish.js';
 import { pageAccess, pageTools } from './page-tools.js';
 import { AbstractAgent } from '@ag-ui/client';
 import { type BaseEvent, type RunAgentInput, EventType } from '@ag-ui/core';
@@ -190,6 +191,7 @@ export class DotAgent extends AbstractAgent {
           api: usingChatGptPlan ? 'responses' : 'chat-completions',
           maxRetries: 1,
         });
+        if (usingChatGptPlan) restoreResponseToolFinish(adapter);
         const serverTools = [
           ...tools,
           ...pageTools(pages),
